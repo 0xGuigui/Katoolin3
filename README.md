@@ -1,8 +1,8 @@
 # Katoolin 3
 
-[![Licence - GNU General Public License v2.0](https://img.shields.io/badge/Licence-GNU_General_Public_License_v2.0-2ea44f)](https://github.com/Nysioko/Katoolin3/blob/master/LICENCE)
+[![Licence - GNU General Public License v2.0](https://img.shields.io/badge/Licence-GNU_General_Public_License_v2.0-2ea44f)](https://github.com/0xGuigui/Katoolin3/blob/master/LICENCE)
 [![Python 3](https://img.shields.io/badge/Python_3-gray?logo=python)](https://www.python.org/)
-[![Katoolin 3](https://img.shields.io/badge/Katoolin_3-darkgreen?logo=Kali+Linux&logoColor=white)](https://github.com/Nysioko/Katoolin3/)
+[![Katoolin 3](https://img.shields.io/badge/Katoolin_3-darkgreen?logo=Kali+Linux&logoColor=white)](https://github.com/0xGuigui/Katoolin3/)
 
 ![Logo](https://i.imgur.com/FbsdrLU.png)
 
@@ -11,7 +11,7 @@ Install Kali Tools on Your Ubuntu/Debian distribution!
 ## Authors
 
 - Original code by [@LionSec](https://github.com/LionSec)
-- Updated by [@Nysioko](https://github.com/Nysioko)
+- Updated by [@0xGuigui](https://github.com/0xGuigui)
 
 ## Requirements
 
@@ -34,7 +34,7 @@ Install Kali Tools on Your Ubuntu/Debian distribution!
 
 At first, clone the repo with the command:
 
-    git clone https://github.com/Nysioko/Katoolin3.git && cd Katoolin3
+    git clone https://github.com/0xGuigui/Katoolin3.git && cd Katoolin3
 
 Assign the necessary permissions to the file for it to run as a program:
 
@@ -87,7 +87,7 @@ However, it remains usable and not everything is to be thrown away, which is why
 
 Please visit https://github.com/LionSec/katoolin/issues
 
-or visit https://github.com/Nysioko/Katoolin3/issues
+or visit https://github.com/0xGuigui/Katoolin3/issues
 
 ## Informations
 
@@ -96,11 +96,10 @@ You can still find the base script in the /old/ folder in the repo, but it is no
 ## License
 
 This project is licensed under the GNU General Public License v2.0 - see
-the [LICENSE](https://github.com/Nysioko/Katoolin3/blob/master/LICENCE) file for details
+the [LICENSE](https://github.com/0xGuigui/Katoolin3/blob/master/LICENCE) file for details
 
 ## Contact
 
 If you want to contact me you can reach me at:
 
-- [Email](mailto:nysioko@gmail.com)
-- [Twitter](https://twitter.com/Nysioko)
+- [Email](mailto:0xguigui@proton.me)
