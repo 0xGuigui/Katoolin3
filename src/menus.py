@@ -27,7 +27,7 @@ def main_banner() -> None:
 """
     print(banner)
     print(f" {C_GREEN}+ -- -- +=[ Original Script by: LionSec | Homepage: www.neodrix.com {C_RESET}")
-    print(f" {C_GREEN}+ -- -- +=[ Rewrites and maintained by: 0xGuigui{C_RESET}")
+    print(f" {C_GREEN}+ -- -- +=[ Rewrites and maintained by: mflr0{C_RESET}")
     print(f" {C_GREEN}+ -- -- +=[ Version: {VERSION} {C_RESET}")
     print("")
     print(f"{C_RED}[W] Before updating and upgrading your system, please remove all Kali-linux repositories to avoid any kind of problem.{C_RESET}")

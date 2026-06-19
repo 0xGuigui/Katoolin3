@@ -1,6 +1,6 @@
 # Katoolin 3
 
-[![Licence](https://img.shields.io/badge/Licence-GNU_GPL_v2.0-blue)](https://github.com/0xGuigui/Katoolin3/blob/master/LICENCE)
+[![Licence](https://img.shields.io/badge/Licence-GNU_GPL_v2.0-blue)](https://github.com/mflr0/Katoolin3/blob/master/LICENCE)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
 
 Install Kali Linux tools on your Debian/Ubuntu distribution.
@@ -15,7 +15,7 @@ Install Kali Linux tools on your Debian/Ubuntu distribution.
 Clone the repository and run the script:
 
 ```bash
-git clone https://github.com/0xGuigui/Katoolin3.git
+git clone https://github.com/mflr0/Katoolin3.git
 cd Katoolin3
 chmod +x katoolin3.py
 sudo ./katoolin3.py
@@ -64,7 +64,7 @@ The original repository appears unmaintained. This fork exists to provide necess
 The script automates the installation of robust tools. However, adding third-party repositories always carries some risk. Use with caution and ensure you understand the changes being made to your package manager sources.
 
 **Reporting Issues**
-For issues specific to this version, please open an issue on the [GitHub repository](https://github.com/0xGuigui/Katoolin3/issues).
+For issues specific to this version, please open an issue on the [GitHub repository](https://github.com/mflr0/Katoolin3/issues).
 
 ## License
 
@@ -73,4 +73,4 @@ This project is licensed under the GNU General Public License v2.0.
 ## Authors
 
 - **LionSec** (Original Author)
-- **0xGuigui** (Maintainer)
+- **mflr0** (Maintainer)
