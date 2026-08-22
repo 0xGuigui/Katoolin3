@@ -10,21 +10,42 @@ from repo import add_kali_key, remove_kali_repo, show_sources_list, write_kali_r
 from style import print_menu, clear, wait_for_input
 from logger import logger, setup_logger
 from update import check_update
+from platform_detector import PlatformInfo
 
 
 def setup() -> bool:
     """Check requirements and setup environment."""
-    # Root is required for apt and repo changes.
-    if os.geteuid() != 0:
-        logger.error("Root privileges required.")
-        print(
-            "You need to have root privileges to run this script.\nPlease try again, this time using 'sudo'. Exiting.")
-        return False
     clear()
+    
+    # Get platform info
+    platform_info = PlatformInfo.get_distribution_info()
+    logger.info(f"Platform: {platform_info}")
+    
+    if PlatformInfo.is_linux():
+        # Root is required for apt and repo changes on Linux
+        if os.geteuid() != 0:
+            logger.error("Root privileges required on Linux.")
+            print(
+                "You need to have root privileges to run this script.\nPlease try again, this time using 'sudo'. Exiting.")
+            return False
+    elif PlatformInfo.is_windows():
+        # Admin is recommended but not strictly required on Windows
+        if not PlatformInfo.is_admin():
+            logger.warning("Running without administrator privileges on Windows. Some installations may fail.")
+            print("\033[1;33m[WARNING] It is recommended to run this program as Administrator.\033[1;m")
+            response = input("Continue anyway? [y/n]: ")
+            if response.lower() != "y":
+                return False
+    
     return True
 
 def repo_menu() -> None:
-    """Manage Kali repositories."""
+    """Manage Kali repositories (Linux only)."""
+    if PlatformInfo.is_windows():
+        print("\033[1;33mRepository management is only available on Linux systems.\033[1;m")
+        wait_for_input()
+        return
+    
     while True:
         options: List[Tuple[str, str]] = [
             ("1", "Add kali linux repositories"),
@@ -120,15 +141,24 @@ def main() -> None:
             clear()
             main_banner()
             
-            options: List[Tuple[str, str]] = [
-                ("1", "Add Kali repositories & Update"),
-                ("2", "View Categories"),
-                ("3", "Search for tools"),
-                ("4", "Install classicmenu indicator"),
-                ("5", "Install Kali menu"),
-                ("6", "Help"),
-                ("7", "Uninstall all tools (WIP)"),
-            ]
+            # Adjust menu based on platform
+            if PlatformInfo.is_windows():
+                options: List[Tuple[str, str]] = [
+                    ("1", "View Categories"),
+                    ("2", "Search for tools"),
+                    ("3", "Help"),
+                ]
+            else:
+                options: List[Tuple[str, str]] = [
+                    ("1", "Add Kali repositories & Update"),
+                    ("2", "View Categories"),
+                    ("3", "Search for tools"),
+                    ("4", "Install classicmenu indicator"),
+                    ("5", "Install Kali menu"),
+                    ("6", "Help"),
+                    ("7", "Uninstall all tools (WIP)"),
+                ]
+            
             # Tell print_menu NOT to clear and NOT to show nav options
             print_menu("Main Menu", options, tools_mode=False, show_navigation=False, clear_screen=False)
             option0 = input("\033[1;36mkat > \033[1;m")
@@ -136,56 +166,71 @@ def main() -> None:
                 logger.info("Shutdown requested")
                 print("Shutdown requested...Goodbye...")
                 sys.exit()
-            elif option0 == "1":
-                repo_menu()
-            elif option0 == "2":
-                run_categories_menu()
-            elif option0 == "3":
-                run_search_menu()
-            elif option0 == "4":
-                print(CLASSICMENU_INFO)
-                repo = input(
-                    "\033[1;32mDo you want to install classicmenu indicator ? [y/n]> \033[1;m")
-                if repo == "y":
-                    logger.info("Installing classicmenu-indicator")
-                    exec_system_command("add-apt-repository ppa:diesch/testing && apt-get update")
-                    exec_system_command("apt-get install classicmenu-indicator")
-                wait_for_input()
-            elif option0 == "6":
-                print("")
-                help_menu()
-                wait_for_input()
-            elif option0 == "5":
-                repo = input(
-                    "\033[1;32mDo you want to install Kali menu ? [y/n]> \033[1;m")
-                if repo == "y":
-                    logger.info("Installing kali-menu")
-                    exec_system_command("apt-get install kali-menu")
-                wait_for_input()
-            elif option0 == "7":
-                print(f"\n{C_RED}[CAUTION] This will uninstall ALL tools listed in Katoolin3 that were installed via apt.{C_RESET}")
-                print(f"{C_RED}Tools installed manually (git clone, etc.) will NOT be removed.{C_RESET}")
-                confirm = input(f"\n{C_RED}Are you sure you want to proceed? [type 'YES' to confirm] > {C_RESET}")
-                if confirm == "YES":
-                    logger.info("Starting mass uninstallation...")
-                    tools_data = load_tools()
-                    all_commands = []
-                    for cat_tools in tools_data.values():
-                        for t in cat_tools:
-                            all_commands.append(t["command"])
-                    
-                    uninstall_tools(all_commands)
-                    print("\n\033[1;32mUninstallation complete.\033[1;m")
+            elif PlatformInfo.is_windows():
+                # Windows menu handling
+                if option0 == "1":
+                    run_categories_menu()
+                elif option0 == "2":
+                    run_search_menu()
+                elif option0 == "3":
+                    print("")
+                    help_menu()
                     wait_for_input()
                 else:
-                    print("\nOperation cancelled.")
+                    print("\033[1;31mSorry, that was an invalid command!\033[1;m")
                     wait_for_input()
-            elif option0 == "help":
-                help_menu()
-                wait_for_input()
             else:
-                print("\033[1;31mSorry, that was an invalid command!\033[1;m")
-                wait_for_input()
+                # Linux menu handling (original)
+                if option0 == "1":
+                    repo_menu()
+                elif option0 == "2":
+                    run_categories_menu()
+                elif option0 == "3":
+                    run_search_menu()
+                elif option0 == "4":
+                    print(CLASSICMENU_INFO)
+                    repo = input(
+                        "\033[1;32mDo you want to install classicmenu indicator ? [y/n]> \033[1;m")
+                    if repo == "y":
+                        logger.info("Installing classicmenu-indicator")
+                        exec_system_command("add-apt-repository ppa:diesch/testing && apt-get update")
+                        exec_system_command("apt-get install classicmenu-indicator")
+                    wait_for_input()
+                elif option0 == "6":
+                    print("")
+                    help_menu()
+                    wait_for_input()
+                elif option0 == "5":
+                    repo = input(
+                        "\033[1;32mDo you want to install Kali menu ? [y/n]> \033[1;m")
+                    if repo == "y":
+                        logger.info("Installing kali-menu")
+                        exec_system_command("apt-get install kali-menu")
+                    wait_for_input()
+                elif option0 == "7":
+                    print(f"\n{C_RED}[CAUTION] This will uninstall ALL tools listed in Katoolin3 that were installed via apt.{C_RESET}")
+                    print(f"{C_RED}Tools installed manually (git clone, etc.) will NOT be removed.{C_RESET}")
+                    confirm = input(f"\n{C_RED}Are you sure you want to proceed? [type 'YES' to confirm] > {C_RESET}")
+                    if confirm == "YES":
+                        logger.info("Starting mass uninstallation...")
+                        tools_data = load_tools()
+                        all_commands = []
+                        for cat_tools in tools_data.values():
+                            for t in cat_tools:
+                                all_commands.append(t["command"])
+                        
+                        uninstall_tools(all_commands)
+                        print("\n\033[1;32mUninstallation complete.\033[1;m")
+                        wait_for_input()
+                    else:
+                        print("\nOperation cancelled.")
+                        wait_for_input()
+                elif option0 == "help":
+                    help_menu()
+                    wait_for_input()
+                else:
+                    print("\033[1;31mSorry, that was an invalid command!\033[1;m")
+                    wait_for_input()
     except KeyboardInterrupt:
         logger.info("Shutdown requested (KeyboardInterrupt)")
         print("Shutdown requested...Goodbye...")
