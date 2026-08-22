@@ -1,6 +1,8 @@
 import os
 import subprocess
+import sys
 from logger import logger
+from platform_detector import PlatformInfo
 
 from typing import List, Tuple
 
@@ -51,53 +53,66 @@ def exec_system_command(cmd: str) -> int:
 def install_tools(commands: List[str]) -> None:
     """
     Smartly install a list of tools.
-    Aggregates 'apt-get install' commands for performance.
+    On Linux: Aggregates 'apt-get install' commands for performance.
+    On Windows: Uses Windows package managers (pip, choco, scoop).
     Runs other commands sequentially.
     """
-    apt_packages: List[str] = []
-    other_commands: List[str] = []
+    if PlatformInfo.is_windows():
+        # Windows installation
+        from windows_commands import WindowsInstaller
+        WindowsInstaller.install_tools(commands)
+    else:
+        # Linux installation (original logic)
+        apt_packages: List[str] = []
+        other_commands: List[str] = []
 
-    for cmd in commands:
-        cmd = cmd.strip()
-        # Check for simple apt-get install commands
-        if cmd.startswith("apt-get install ") and "&&" not in cmd and ";" not in cmd and "|" not in cmd:
-            pkg_part = cmd.replace("apt-get install", "").strip()
-            pkgs = [p for p in pkg_part.split() if not p.startswith("-")]
-            apt_packages.extend(pkgs)
-        else:
-            other_commands.append(cmd)
+        for cmd in commands:
+            cmd = cmd.strip()
+            # Check for simple apt-get install commands
+            if cmd.startswith("apt-get install ") and "&&" not in cmd and ";" not in cmd and "|" not in cmd:
+                pkg_part = cmd.replace("apt-get install", "").strip()
+                pkgs = [p for p in pkg_part.split() if not p.startswith("-")]
+                apt_packages.extend(pkgs)
+            else:
+                other_commands.append(cmd)
 
-    # 1. Run aggregated apt install with fallback
-    if apt_packages:
-        # Remove duplicates
-        apt_packages = list(set(apt_packages))
-        logger.info(f"Aggregating installation for {len(apt_packages)} packages...")
-        full_apt_cmd = f"apt-get install -y {' '.join(apt_packages)}"
-        
-        # Try aggregated install
-        ret = exec_system_command(full_apt_cmd)
-        
-        if ret != 0:
-            # Fallback to sequential installation
-            logger.warning("Aggregated installation failed. Falling back to sequential installation...")
-            print("\033[1;33mAggregated installation failed. Retrying packages one by one...\033[1;m")
+        # 1. Run aggregated apt install with fallback
+        if apt_packages:
+            # Remove duplicates
+            apt_packages = list(set(apt_packages))
+            logger.info(f"Aggregating installation for {len(apt_packages)} packages...")
+            full_apt_cmd = f"apt-get install -y {' '.join(apt_packages)}"
             
-            for pkg in apt_packages:
-                ret_seq = exec_system_command(f"apt-get install -y {pkg}")
-                # We log errors individually but continue
-                if ret_seq != 0:
-                     logger.error(f"Failed to install package: {pkg}")
+            # Try aggregated install
+            ret = exec_system_command(full_apt_cmd)
+            
+            if ret != 0:
+                # Fallback to sequential installation
+                logger.warning("Aggregated installation failed. Falling back to sequential installation...")
+                print("\033[1;33mAggregated installation failed. Retrying packages one by one...\033[1;m")
+                
+                for pkg in apt_packages:
+                    ret_seq = exec_system_command(f"apt-get install -y {pkg}")
+                    # We log errors individually but continue
+                    if ret_seq != 0:
+                         logger.error(f"Failed to install package: {pkg}")
 
-    # 2. Run others sequentially
-    for cmd in other_commands:
-        # Continue execution even if one fails
-        exec_system_command(cmd)
+        # 2. Run others sequentially
+        for cmd in other_commands:
+            # Continue execution even if one fails
+            exec_system_command(cmd)
 
 def uninstall_tools(commands: List[str]) -> None:
     """
-    Uninstall tools that were installed via apt-get.
+    Uninstall tools that were installed via apt-get (Linux only).
+    On Windows, this is not supported.
     Ignores non-apt commands for safety.
     """
+    if PlatformInfo.is_windows():
+        logger.warning("Uninstall functionality is not supported on Windows.")
+        print("\033[1;33m[WARNING] Uninstall functionality is not supported on Windows.\033[1;m")
+        return
+    
     apt_packages: List[str] = []
 
     for cmd in commands:
@@ -127,7 +142,10 @@ def uninstall_tools(commands: List[str]) -> None:
 def open_shell() -> None:
     """Open an interactive shell."""
     print("\033[1;33mStarting shell... Type 'exit' to return to Katoolin3.\033[1;m")
-    user_shell = os.environ.get("SHELL", "/bin/bash")
+    if PlatformInfo.is_windows():
+        user_shell = os.environ.get("COMSPEC", "cmd.exe")
+    else:
+        user_shell = os.environ.get("SHELL", "/bin/bash")
     try:
         subprocess.run(user_shell)
     except Exception as e:
